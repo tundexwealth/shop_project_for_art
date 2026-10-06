@@ -12,7 +12,8 @@ export async function POST(request: NextRequest) {
     if (process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN && process.env.MAILGUN_FROM) {
       const form = new FormData(); form.set("from", process.env.MAILGUN_FROM); form.set("to", email); form.set("subject", "Your Artini idea is here"); form.set("text", `Hello ${String(data.customer_name).trim()},\n\nThank you for sharing your idea with Artini. We've got your note and will be in touch soon to dream up a piece that feels like you.\n\nWith care,\nArtini`);
       if (process.env.STUDIO_INBOX) form.set("bcc", process.env.STUDIO_INBOX);
-      const response = await fetch(`https://api.mailgun.net/v3/${process.env.MAILGUN_DOMAIN}/messages`, { method: "POST", headers: { Authorization: `Basic ${Buffer.from(`api:${process.env.MAILGUN_API_KEY}`).toString("base64")}` }, body: form }); emailSent = response.ok;
+      const mailgunBaseUrl = (process.env.MAILGUN_BASE_URL || "https://api.mailgun.net").replace(/\/+$/, "");
+      const response = await fetch(`${mailgunBaseUrl}/v3/${process.env.MAILGUN_DOMAIN}/messages`, { method: "POST", headers: { Authorization: `Basic ${Buffer.from(`api:${process.env.MAILGUN_API_KEY}`).toString("base64")}` }, body: form }); emailSent = response.ok;
     }
     return NextResponse.json({ inquiryId: inquiry.id, emailSent }, { status: 201 });
   } catch (error) { console.error("Custom inquiry creation failed", error); return NextResponse.json({ error: "We couldn't save your note. Please try again or email the studio." }, { status: 500 }); }
