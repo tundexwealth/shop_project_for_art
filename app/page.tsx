@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowDown, ArrowRight, ArrowUpRight, Menu, ShoppingBag, Sparkles, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useCartSync } from "@/lib/cart-sync";
 import type { User } from "@supabase/supabase-js";
 
 type Product = { id: string; name: string; category: string; description: string; price: number; image_url?: string; kind: string; featured?: boolean };
@@ -15,12 +16,12 @@ const money = (amount: number) => new Intl.NumberFormat("en-NG", { style: "curre
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>(demoProducts);
-  const [cartCount, setCartCount] = useState(0);
+  const { cart, setCart } = useCartSync();
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [toast, setToast] = useState("");
   useEffect(() => {
-    try { setCartCount(JSON.parse(localStorage.getItem("artini-cart") || "[]").reduce((sum: number, x: { quantity: number }) => sum + x.quantity, 0)); } catch {}
     const currentUrl = new URL(window.location.href);
     if (currentUrl.searchParams.get("auth") === "error") {
       const stage = currentUrl.searchParams.get("stage");
@@ -40,10 +41,9 @@ export default function Home() {
     return () => unsubscribe?.();
   }, []);
   const addToCart = (product: Product) => {
-    const cart = JSON.parse(localStorage.getItem("artini-cart") || "[]") as { id: string; quantity: number; name?: string; price?: number; image_url?: string }[];
     const current = cart.find((x) => x.id === product.id);
-    if (current) current.quantity += 1; else cart.push({ id: product.id, quantity: 1, name: product.name, price: product.price, image_url: product.image_url });
-    localStorage.setItem("artini-cart", JSON.stringify(cart)); setCartCount(cart.reduce((n, x) => n + x.quantity, 0));
+    const next = current ? cart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item) : [...cart, { id: product.id, quantity: 1, name: product.name, price: product.price, image_url: product.image_url }];
+    setCart(next);
     setToast(`${product.name} added to your bag`); window.setTimeout(() => setToast(""), 2400);
   };
   const signIn = async () => {

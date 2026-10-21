@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Artini",
+    "slug": "artini-mobile",
+    "scheme": "artini",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.artini.shop"
+    },
+    "android": {
+      "package": "com.artini.shop",
+      "adaptiveIcon": {
+        "backgroundColor": "#F7F3EC",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "plugins": ["expo-web-browser"]
+  }
+}

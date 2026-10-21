@@ -20,6 +20,13 @@ A responsive storefront for a handmade string art studio, with product checkout,
 - Google OAuth uses Supabase Auth. Google Cloud credentials belong in Supabase's Google provider settings.
 - Order confirmation emails are sent through the Mailgun Messages API.
 - Workshop and custom commission requests are stored in Supabase and acknowledged through Mailgun when configured.
+- The Expo mobile app in [`mobile/`](mobile/README.md) uses the same Supabase account and shop APIs. Signed-in carts sync between web and mobile.
+
+## Mobile app
+
+For local phone development, configure the Expo environment, run the web app on your computer's network, then start Expo as described in [`mobile/README.md`](mobile/README.md). To install a standalone Android app with the Artini launcher icon, build the preview APK with EAS Build.
+
+Before testing shared carts, run [`supabase/cart-sync.sql`](supabase/cart-sync.sql) in the Supabase SQL editor. This adds the per-user cart table and Realtime publication used by both clients.
 
 ## Before launch
 

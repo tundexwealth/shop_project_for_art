@@ -30,13 +30,27 @@ create table if not exists public.custom_inquiries (
   status text not null default 'new' check (status in ('new','contacted','quoted','accepted','closed')),
   created_at timestamptz not null default now()
 );
+create table if not exists public.user_carts (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  items jsonb not null default '[]'::jsonb check (jsonb_typeof(items) = 'array'),
+  updated_at timestamptz not null default now()
+);
 alter table public.products enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 alter table public.workshop_inquiries enable row level security;
 alter table public.custom_inquiries enable row level security;
+alter table public.user_carts enable row level security;
 drop policy if exists "Anyone can view active products" on public.products;
 create policy "Anyone can view active products" on public.products for select using (active = true);
+grant select on public.user_carts to authenticated;
+drop policy if exists "Users can view their own cart" on public.user_carts;
+create policy "Users can view their own cart" on public.user_carts for select to authenticated using (auth.uid() = user_id);
+do $$ begin
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'user_carts') then
+    alter publication supabase_realtime add table public.user_carts;
+  end if;
+end $$;
 -- Customer records are written from server routes with the service-role key only.
 
 insert into public.products (id,name,category,description,price,image_url,kind,featured) values
